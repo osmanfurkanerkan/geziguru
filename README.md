@@ -16,6 +16,8 @@ canlı internet aramasıyla gerçek mekanlar öneren ve **kişisel/hassas veriyi
 > **Tek cümlelik değer önerisi:** "Gezimi gün gün planlayan, bütçemi tutan; ama pasaport/kart
 > bilgimi koruyup rezervasyon yapmadan önce bana soran akıllı seyahat asistanı."
 
+![GeziGuru web arayüzü](docs/screenshots/geziguru.png)
+
 ---
 
 ## 🎯 Capstone Kriter Eşlemesi
@@ -183,11 +185,9 @@ python -m tests.test_agents       # ajanlar + yönlendirme (gerçek Gemini gerek
 
 ## 🖼️ Ekran Görüntüleri
 
-> Web arayüzü (`python -m app.api` → http://localhost:8000). Ekran görüntülerini
-> `docs/screenshots/` klasörüne ekleyip aşağıya bağlayabilirsiniz.
+Web arayüzü (`python -m app.api` → http://localhost:8000):
 
-<!-- ![Sohbet](docs/screenshots/chat.png) -->
-<!-- ![Plan](docs/screenshots/plan.png) -->
+![GeziGuru sohbet arayüzü](docs/screenshots/geziguru.png)
 
 ---
 
