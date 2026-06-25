@@ -193,14 +193,5 @@ Web interface (`python -m app.api` → http://localhost:8000):
 
 ---
 
-## 📜 License
 
-This project is licensed under the [MIT License](LICENSE).
 
-## 👤 Author
-
-**Osman Furkan Erkan** — Google AI Agents Intensive Capstone (2026)
-
----
-
-*Built as part of the Google AI Agents Intensive Capstone.*
