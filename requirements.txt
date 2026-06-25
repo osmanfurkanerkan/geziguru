@@ -1,0 +1,11 @@
+# GeziGuru — Google AI Agents Capstone
+# Python 3.12+
+
+google-adk>=1.0.0          # Agent Development Kit (multi-agent)
+google-genai>=1.0.0        # Gemini SDK (ADK altında kullanılır)
+mcp>=1.0.0                 # Model Context Protocol SDK (kendi MCP server'ımız)
+python-dotenv>=1.0.0       # .env okuma
+ddgs>=6.0.0                # ücretsiz DuckDuckGo web araması (Keşif ajanı, canlı veri)
+fastapi>=0.110.0           # web sitesi arka ucu (app/api.py)
+uvicorn>=0.27.0            # ASGI sunucusu (FastAPI'yi çalıştırır)
+streamlit>=1.40.0          # alternatif arayüz (app/web.py — geliştirici/güvenlik paneli)

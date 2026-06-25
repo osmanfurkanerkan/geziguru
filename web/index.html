@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>GeziGuru · Akıllı Seyahat Asistanı</title>
+<style>
+  :root{
+    --bg1:#6a8dff; --bg2:#9d6bff; --bg3:#ff8fb1;
+    --card:#ffffff; --ink:#1f2440; --muted:#7a82a8;
+    --me1:#6a8dff; --me2:#8b6bff; --bot:#f3f5ff; --line:#e7eaf6;
+    --accent:#6a8dff;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-font-smoothing:antialiased}
+  html,body{height:100%}
+  body{
+    font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;
+    color:var(--ink);
+    background:linear-gradient(135deg,var(--bg1),var(--bg2) 55%,var(--bg3));
+    background-attachment:fixed;
+    display:flex;align-items:center;justify-content:center;
+    padding:20px;overflow:hidden;
+  }
+  /* hareketli arka plan: süzülen bulutlar + uçak */
+  .sky{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none}
+  .cloud{position:absolute;background:#fff;border-radius:50%;filter:blur(6px);opacity:.18}
+  .cloud::before,.cloud::after{content:"";position:absolute;background:#fff;border-radius:50%}
+  .c1{width:120px;height:120px;top:14%;left:-160px;animation:drift 38s linear infinite}
+  .c1::before{width:80px;height:80px;top:30px;left:70px}
+  .c2{width:90px;height:90px;top:62%;left:-160px;animation:drift 52s linear infinite;animation-delay:-10s}
+  .c2::before{width:60px;height:60px;top:25px;left:55px}
+  .c3{width:150px;height:150px;top:38%;left:-220px;animation:drift 64s linear infinite;animation-delay:-26s;opacity:.12}
+  .plane{position:absolute;top:22%;left:-80px;font-size:34px;opacity:.5;animation:fly 26s linear infinite}
+  @keyframes drift{to{transform:translateX(125vw)}}
+  @keyframes fly{
+    0%{transform:translate(-80px,0) rotate(8deg)}
+    50%{transform:translate(50vw,-30px) rotate(8deg)}
+    100%{transform:translate(110vw,10px) rotate(8deg)}
+  }
+
+  .app{
+    position:relative;z-index:1;
+    width:100%;max-width:760px;height:min(88vh,820px);
+    background:var(--card);border-radius:26px;overflow:hidden;
+    box-shadow:0 30px 80px rgba(40,30,90,.35);
+    display:flex;flex-direction:column;
+  }
+
+  header{
+    padding:18px 22px;color:#fff;position:relative;overflow:hidden;
+    background:linear-gradient(120deg,var(--me1),var(--me2));
+    display:flex;align-items:center;gap:14px;
+  }
+  header .shine{position:absolute;inset:0;background:
+    radial-gradient(400px 80px at 10% 0%,rgba(255,255,255,.25),transparent)}
+  .logo{
+    width:46px;height:46px;border-radius:14px;background:rgba(255,255,255,.18);
+    display:grid;place-items:center;font-size:24px;backdrop-filter:blur(6px);z-index:1;
+    animation:bob 3.5s ease-in-out infinite;
+  }
+  @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+  header h1{font-size:20px;font-weight:700;letter-spacing:.2px;z-index:1}
+  header p{font-size:12.5px;opacity:.9;margin-top:2px;z-index:1}
+  .status{margin-left:auto;display:flex;align-items:center;gap:7px;font-size:12px;opacity:.95;z-index:1}
+  .dot{width:8px;height:8px;border-radius:50%;background:#7CFFB2;box-shadow:0 0 0 0 rgba(124,255,178,.6);animation:pulse 2s infinite}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(124,255,178,.6)}70%{box-shadow:0 0 0 8px rgba(124,255,178,0)}100%{box-shadow:0 0 0 0 rgba(124,255,178,0)}}
+
+  .chat{flex:1;overflow-y:auto;padding:22px;background:
+        radial-gradient(1200px 300px at 50% -10%,rgba(106,141,255,.07),transparent);}
+  .chat::-webkit-scrollbar{width:8px}
+  .chat::-webkit-scrollbar-thumb{background:#d8ddf2;border-radius:8px}
+
+  .row{display:flex;margin-bottom:14px;animation:rise .35s ease both}
+  .row.me{justify-content:flex-end}
+  @keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+  .bubble{
+    max-width:78%;padding:12px 15px;border-radius:18px;font-size:14.5px;line-height:1.6;
+    box-shadow:0 4px 14px rgba(40,30,90,.06);word-wrap:break-word;
+  }
+  .me .bubble{
+    background:linear-gradient(120deg,var(--me1),var(--me2));color:#fff;border-bottom-right-radius:6px;
+  }
+  .bot .bubble{background:var(--bot);color:var(--ink);border:1px solid var(--line);border-bottom-left-radius:6px}
+  .bubble h4{font-size:15px;margin:8px 0 4px}
+  .bubble ul{margin:6px 0 6px 18px}
+  .bubble li{margin:3px 0}
+  .bubble strong{font-weight:700}
+  .caret{display:inline-block;width:7px;height:15px;background:var(--accent);margin-left:2px;
+         border-radius:2px;vertical-align:-2px;animation:blink2 .8s steps(1) infinite}
+  @keyframes blink2{50%{opacity:0}}
+  .badge{
+    display:inline-block;font-size:11px;font-weight:600;color:var(--accent);
+    background:#eef2ff;border:1px solid #dde4ff;border-radius:20px;padding:2px 9px;margin-bottom:7px;
+  }
+  .avatar{
+    width:34px;height:34px;border-radius:50%;flex:0 0 34px;display:grid;place-items:center;
+    font-size:17px;margin:0 9px;align-self:flex-end;
+  }
+  .bot .avatar{background:linear-gradient(120deg,#eaf0ff,#f6eaff)}
+  .me .avatar{background:linear-gradient(120deg,var(--me1),var(--me2));color:#fff}
+
+  /* öneri çipleri */
+  .chips{display:flex;flex-wrap:wrap;gap:9px;margin:2px 2px 4px}
+  .chip{
+    cursor:pointer;font-size:13px;color:var(--ink);background:#fff;border:1.5px solid var(--line);
+    padding:9px 13px;border-radius:30px;transition:.18s;animation:rise .4s ease both;
+  }
+  .chip:hover{border-color:var(--accent);color:var(--accent);transform:translateY(-1px);box-shadow:0 6px 16px rgba(106,141,255,.18)}
+
+  /* yazıyor animasyonu */
+  .typing{display:flex;gap:5px;padding:14px 16px}
+  .typing span{width:8px;height:8px;border-radius:50%;background:#b9c2ec;animation:blink 1.3s infinite}
+  .typing span:nth-child(2){animation-delay:.2s}
+  .typing span:nth-child(3){animation-delay:.4s}
+  @keyframes blink{0%,60%,100%{opacity:.3;transform:translateY(0)}30%{opacity:1;transform:translateY(-3px)}}
+
+  footer{padding:14px 16px;border-top:1px solid var(--line);background:#fff}
+  .inputbar{display:flex;gap:10px;align-items:flex-end}
+  textarea{
+    flex:1;resize:none;border:1.5px solid var(--line);border-radius:16px;padding:12px 14px;
+    font:inherit;font-size:14.5px;max-height:120px;outline:none;transition:.15s;color:var(--ink);
+  }
+  textarea:focus{border-color:var(--accent);box-shadow:0 0 0 4px rgba(106,141,255,.12)}
+  .send{
+    width:48px;height:48px;flex:0 0 48px;border:none;border-radius:14px;cursor:pointer;color:#fff;
+    background:linear-gradient(120deg,var(--me1),var(--me2));font-size:20px;transition:.15s;
+  }
+  .send:hover{filter:brightness(1.07);transform:translateY(-1px) scale(1.03)}
+  .send:disabled{opacity:.5;cursor:not-allowed;transform:none}
+  .hint{font-size:11px;color:var(--muted);text-align:center;margin-top:7px}
+</style>
+</head>
+<body>
+  <div class="sky">
+    <div class="cloud c1"></div><div class="cloud c2"></div><div class="cloud c3"></div>
+    <div class="plane">✈️</div>
+  </div>
+
+  <div class="app">
+    <header>
+      <div class="shine"></div>
+      <div class="logo">✈️</div>
+      <div>
+        <h1>GeziGuru</h1>
+        <p>Akıllı Kişisel Seyahat Asistanı</p>
+      </div>
+      <div class="status"><span class="dot"></span> çevrimiçi</div>
+    </header>
+
+    <div class="chat" id="chat"></div>
+
+    <footer>
+      <div class="inputbar">
+        <textarea id="input" rows="1" placeholder="Seyahatinle ilgili bir şey sor... (örn. İstanbul'a 3 günlük rota öner)"></textarea>
+        <button class="send" id="send" title="Gönder">➤</button>
+      </div>
+      <div class="hint">Enter ile gönder · Shift+Enter ile alt satır</div>
+    </footer>
+  </div>
+
+<script>
+const chat = document.getElementById('chat');
+const input = document.getElementById('input');
+const sendBtn = document.getElementById('send');
+
+let sessionId = localStorage.getItem('gg_session') || crypto.randomUUID();
+localStorage.setItem('gg_session', sessionId);
+
+const SUGGESTIONS = [
+  "İstanbul'a 3 günlük rota öner",
+  "Kadıköy'de güzel restoran öner",
+  "İzmir'e 2 günlük plan yap, bütçem 5000 TL",
+  "Sultanahmet Oteli için rezervasyon oluştur"
+];
+
+// Cevaptan sonra gösterilecek bağlama duyarlı takip önerileri
+const FOLLOWUPS = {
+  "🗺️ Plan Uzmanı": ["Bu plana otel ekle", "Bir günü değiştir", "Yakında nerede yenir?"],
+  "🔎 Keşif": ["Bunları planıma ekle", "Başka bir semt öner", "Etkinlik var mı?"],
+  "💳 Rezervasyon & Bütçe": ["Bütçe özetini göster", "Harcamalarımı listele"],
+  "_default": ["Bana rota öner", "Mekan öner", "Bütçemi göster"]
+};
+
+// --- basit & güvenli markdown -> html ---
+function esc(s){return s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function format(md){
+  const lines = esc(md).split('\n');
+  let html='', inList=false;
+  const inline = t => t.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
+  for(let raw of lines){
+    let l = raw.trim();
+    if(/^[\*\-] /.test(l)){
+      if(!inList){html+='<ul>';inList=true;}
+      html += '<li>'+inline(l.replace(/^[\*\-] /,''))+'</li>';
+    } else {
+      if(inList){html+='</ul>';inList=false;}
+      if(l==='') html+='<div style="height:6px"></div>';
+      else if(/^### /.test(l)) html+= '<h4>'+inline(l.replace(/^### /,''))+'</h4>';
+      else html += '<div>'+inline(l)+'</div>';
+    }
+  }
+  if(inList) html+='</ul>';
+  return html;
+}
+
+function newRow(role){
+  const row=document.createElement('div');
+  row.className='row '+(role==='me'?'me':'bot');
+  const av=role==='me'?'🧑':'✈️';
+  row.innerHTML =
+    (role==='bot'?`<div class="avatar">${av}</div>`:'')+
+    `<div class="bubble"></div>`+
+    (role==='me'?`<div class="avatar">${av}</div>`:'');
+  chat.appendChild(row);
+  chat.scrollTop=chat.scrollHeight;
+  return row.querySelector('.bubble');
+}
+
+function staticBubble(role, md, badge){
+  const b=newRow(role);
+  b.innerHTML=(badge?`<span class="badge">${badge}</span>`:'')+format(md);
+  chat.scrollTop=chat.scrollHeight;
+}
+
+// typewriter: önce düz metni daktilo gibi yaz, bitince biçimlendirilmiş HTML'e çevir
+function typeBubble(md, badge, done){
+  const b=newRow('bot');
+  const head = badge?`<span class="badge">${badge}</span>`:'';
+  const total = md.length;
+  const duration = Math.min(1500, 350 + total*3);
+  const interval = 16;
+  const chunk = Math.max(1, Math.ceil(total/(duration/interval)));
+  let i=0;
+  const timer=setInterval(()=>{
+    i+=chunk;
+    b.innerHTML = head + esc(md.slice(0,i)).replace(/\n/g,'<br>') + '<span class="caret"></span>';
+    chat.scrollTop=chat.scrollHeight;
+    if(i>=total){
+      clearInterval(timer);
+      b.innerHTML = head + format(md);
+      chat.scrollTop=chat.scrollHeight;
+      done&&done();
+    }
+  }, interval);
+}
+
+function showChips(list, opts){
+  const row=document.createElement('div');row.className='row bot';
+  const hidden = (opts&&opts.hideAvatar)?'visibility:hidden':'';
+  row.innerHTML=`<div class="avatar" style="${hidden}">✈️</div>`;
+  const chips=document.createElement('div');chips.className='chips';
+  list.forEach(s=>{
+    const c=document.createElement('div');c.className='chip';c.textContent=s;
+    c.onclick=()=>{ if(!busy){ input.value=s; send(); } };
+    chips.appendChild(c);
+  });
+  row.appendChild(chips);chat.appendChild(row);
+  chat.scrollTop=chat.scrollHeight;
+  return row;
+}
+
+function welcome(){
+  staticBubble('bot',
+    "Merhaba! Ben **GeziGuru** ✈️ Senin kişisel seyahat asistanınım.\n"+
+    "Sana gün gün **rota** çıkarabilir, **bütçeni** yönetebilir, gerçek **mekanlar** önerebilir ve **rezervasyon** yapabilirim.\n"+
+    "Hadi başlayalım — aşağıdan birini seç ya da kendin yaz:");
+  showChips(SUGGESTIONS, {hideAvatar:true});
+}
+
+let busy=false, lastChips=null;
+async function send(){
+  const text=input.value.trim();
+  if(!text||busy) return;
+  busy=true; sendBtn.disabled=true;
+  if(lastChips){lastChips.remove();lastChips=null;}   // eski takip çiplerini kaldır
+  input.value=''; input.style.height='auto';
+  staticBubble('me', text);
+
+  // yazıyor göstergesi
+  const t=document.createElement('div');t.className='row bot';t.id='typing';
+  t.innerHTML=`<div class="avatar">✈️</div><div class="bubble"><div class="typing"><span></span><span></span><span></span></div></div>`;
+  chat.appendChild(t);chat.scrollTop=chat.scrollHeight;
+
+  try{
+    const r=await fetch('/api/chat',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({message:text, session_id:sessionId})
+    });
+    const data=await r.json();
+    if(data.session_id){sessionId=data.session_id;localStorage.setItem('gg_session',sessionId);}
+    t.remove();
+    typeBubble(data.answer||'(boş cevap)', data.agent||null, ()=>{
+      const fu = FOLLOWUPS[data.agent] || FOLLOWUPS["_default"];
+      lastChips = showChips(fu, {hideAvatar:true});
+      busy=false; sendBtn.disabled=false; input.focus();
+    });
+  }catch(e){
+    t.remove();
+    staticBubble('bot','⚠️ Sunucuya ulaşılamadı. Bağlantını kontrol edip tekrar dene.');
+    busy=false; sendBtn.disabled=false; input.focus();
+  }
+}
+
+sendBtn.onclick=send;
+input.addEventListener('keydown',e=>{
+  if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();}
+});
+input.addEventListener('input',()=>{
+  input.style.height='auto';input.style.height=Math.min(input.scrollHeight,120)+'px';
+});
+
+welcome();
+input.focus();
+</script>
+</body>
+</html>

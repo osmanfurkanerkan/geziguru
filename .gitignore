@@ -1,0 +1,21 @@
+# Ortam / sırlar
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+
+# SQLite veritabanı (seed ile yeniden üretilebilir)
+*.db
+*.db-journal
+app/data/geziguru.db
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
